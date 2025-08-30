@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { Calendar } from "@/components/ui/calendar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
+// import { Button } from "@/components/ui/button";
 import { addWeeks, startOfWeek, format, isSameDay, addDays } from "date-fns";
 
 interface CleaningTask {
@@ -20,7 +20,7 @@ interface Person {
   schedule: string[];
 }
 
-const PLACES = ["客廳", "小厠所", "厨房+走廊", "大厠所"];
+// const PLACES = ["客廳", "小厠所", "厨房+走廊", "大厠所"];
 const PEOPLE_SCHEDULES = [
   ["大厠所", "客廳", "小厠所", "厨房+走廊"], // shi jie
   ["小厠所", "厨房+走廊", "大厠所", "客廳"], // hai yan
@@ -82,9 +82,11 @@ export default function CleaningCalendar() {
     return cleaningTasks.filter(task => task.person === selectedPerson);
   };
 
+  /*
   const getTasksForDate = (date: Date) => {
     return cleaningTasks.filter(task => isSameDay(task.date, date));
   };
+  */
 
   const getTasksForWeek = (date: Date) => {
     const weekStart = startOfWeek(date, { weekStartsOn: 1 });
@@ -262,7 +264,7 @@ export default function CleaningCalendar() {
               </div>
               <div className="flex items-center space-x-2">
                 <div className="w-4 h-4 bg-gray-100 border border-gray-300 rounded"></div>
-                <span className="text-sm">Other people's tasks</span>
+                <span className="text-sm">Other people tasks</span>
               </div>
             </div>
           </div>
