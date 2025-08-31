@@ -3,7 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Calendar, ShoppingCart, Wrench, Users, Settings } from "lucide-react";
+import { Home, Calendar, DollarSign, Wrench, Users, Settings } from "lucide-react";
 import { useSettings } from "@/contexts/SettingsContext";
 
 interface NavItem {
@@ -20,7 +20,7 @@ export default function Navigation() {
   const navigation: NavItem[] = [
     { name: t("nav.dashboard"), href: "/", icon: <Home className="h-5 w-5" />, status: "active" },
     { name: t("nav.cleaningCalendar"), href: "/cleaning-calendar", icon: <Calendar className="h-5 w-5" />, status: "active" },
-    { name: t("nav.shoppingList"), href: "/shopping-list", icon: <ShoppingCart className="h-5 w-5" />, status: "coming-soon" },
+    { name: t("nav.expenses"), href: "/expenses", icon: <DollarSign className="h-5 w-5" />, status: "active" },
     { name: t("nav.maintenance"), href: "/maintenance", icon: <Wrench className="h-5 w-5" />, status: "coming-soon" },
     { name: t("nav.roommates"), href: "/roommates", icon: <Users className="h-5 w-5" />, status: "coming-soon" },
     { name: t("nav.settings"), href: "/settings", icon: <Settings className="h-5 w-5" />, status: "active" },

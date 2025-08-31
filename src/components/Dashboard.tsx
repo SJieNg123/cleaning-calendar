@@ -2,7 +2,7 @@
 
 import React from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Calendar, Home, Settings, Users, ShoppingCart, Wrench } from "lucide-react";
+import { Calendar, Home, Settings, Users, DollarSign, Wrench } from "lucide-react";
 import Link from "next/link";
 import { useSettings } from "@/contexts/SettingsContext";
 
@@ -30,13 +30,13 @@ export default function Dashboard() {
       status: "active"
     },
     {
-      id: "shopping-list",
-      title: t("service.shoppingList.title"),
-      description: t("service.shoppingList.description"),
-      icon: <ShoppingCart className="h-8 w-8" />,
-      href: "/shopping-list",
+      id: "expenses",
+      title: t("service.expenses.title"),
+      description: t("service.expenses.description"),
+      icon: <DollarSign className="h-8 w-8" />,
+      href: "/expenses",
       color: "bg-green-500",
-      status: "coming-soon"
+      status: "active"
     },
     {
       id: "maintenance",
@@ -92,7 +92,7 @@ export default function Dashboard() {
                 </div>
                 <div>
                   <p className="text-sm text-gray-600 dark:text-gray-400">{t("dashboard.activeServices")}</p>
-                  <p className="text-2xl font-bold text-gray-900 dark:text-white">2</p>
+                                     <p className="text-2xl font-bold text-gray-900 dark:text-white">3</p>
                 </div>
               </div>
             </CardContent>
@@ -120,7 +120,7 @@ export default function Dashboard() {
                 </div>
                 <div>
                   <p className="text-sm text-gray-600 dark:text-gray-400">{t("dashboard.comingSoon")}</p>
-                  <p className="text-2xl font-bold text-gray-900 dark:text-white">3</p>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-white">2</p>
                 </div>
               </div>
             </CardContent>
@@ -190,9 +190,9 @@ export default function Dashboard() {
                   <span className="text-sm text-gray-500 dark:text-gray-400">{t("activity.justNow")}</span>
                 </div>
                 <div className="flex items-center space-x-3">
-                  <div className="w-2 h-2 bg-gray-300 rounded-full"></div>
-                  <p className="text-gray-500 dark:text-gray-400">{t("activity.shoppingListComing")}</p>
-                  <span className="text-sm text-gray-400 dark:text-gray-500">{t("activity.inDevelopment")}</span>
+                  <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                  <p className="text-gray-700 dark:text-gray-300">{t("activity.expensesActive")}</p>
+                  <span className="text-sm text-gray-500 dark:text-gray-400">{t("activity.justNow")}</span>
                 </div>
                 <div className="flex items-center space-x-3">
                   <div className="w-2 h-2 bg-gray-300 rounded-full"></div>
