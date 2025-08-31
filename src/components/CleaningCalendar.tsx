@@ -113,11 +113,12 @@ export default function CleaningCalendar() {
   };
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      <Card>
+    <div className="min-h-screen bg-background">
+      <div className="container mx-auto p-6 space-y-6">
+        <Card className="bg-card">
         <CardHeader>
-          <CardTitle>Home Cleaning Calendar</CardTitle>
-          <CardDescription>
+          <CardTitle className="text-foreground">Home Cleaning Calendar</CardTitle>
+          <CardDescription className="text-muted-foreground">
             Manage your alternating week cleaning schedule starting from August 25, 2025. 
             Cleaning occurs every other week (Week 1, 3, 5, etc.) with 4 people and 4 places.
           </CardDescription>
@@ -125,7 +126,7 @@ export default function CleaningCalendar() {
         <CardContent className="space-y-6">
           {/* Person Selection */}
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold">Select Person</h3>
+            <h3 className="text-lg font-semibold text-foreground">Select Person</h3>
             <Select value={selectedPerson} onValueChange={handlePersonSelect}>
               <SelectTrigger className="w-[200px]">
                 <SelectValue placeholder="Choose a person " />
@@ -145,17 +146,17 @@ export default function CleaningCalendar() {
           {/* Schedule Display */}
           {selectedPerson && (
             <div className="space-y-4">
-              <h3 className="text-lg font-semibold">Your Cleaning Schedule</h3>
+              <h3 className="text-lg font-semibold text-foreground">Your Cleaning Schedule</h3>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 {getTasksForSelectedPerson().map((task, index) => (
-                  <Card key={index} className="border-2 border-blue-200">
+                  <Card key={index} className="border-2 border-primary/20 bg-card">
                     <CardContent className="p-4">
                       <div className="text-center">
-                        <div className="font-semibold text-blue-600">Week {task.weekNumber}</div>
-                        <div className="text-sm text-gray-600">
+                        <div className="font-semibold text-primary">Week {task.weekNumber}</div>
+                        <div className="text-sm text-muted-foreground">
                           {format(task.date, "MMM dd, yyyy")}
                         </div>
-                        <div className="text-lg font-bold text-blue-600 mt-2">
+                        <div className="text-lg font-bold text-primary mt-2">
                           {task.place}
                         </div>
                       </div>
@@ -168,14 +169,14 @@ export default function CleaningCalendar() {
 
           {/* Full Schedule Table */}
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold">Complete Schedule</h3>
+            <h3 className="text-lg font-semibold text-foreground">Complete Schedule</h3>
             <div className="overflow-x-auto">
-              <table className="w-full border-collapse border border-gray-300">
+              <table className="w-full border-collapse border border-border">
                 <thead>
-                  <tr className="bg-gray-100">
-                    <th className="border border-gray-300 p-2">Week</th>
+                  <tr className="bg-muted">
+                    <th className="border border-border p-2 text-foreground">Week</th>
                     {personNames.map((person) => (
-                      <th key={person.id} className="border border-gray-300 p-2">
+                      <th key={person.id} className="border border-border p-2 text-foreground">
                         {person.name}
                       </th>
                     ))}
@@ -183,10 +184,10 @@ export default function CleaningCalendar() {
                 </thead>
                 <tbody>
                   {Array.from({ length: 16 }, (_, weekIndex) => (
-                    <tr key={weekIndex} className={weekIndex % 2 === 1 ? 'bg-gray-50' : ''}>
-                      <td className="border border-gray-300 p-2 font-semibold">
+                    <tr key={weekIndex} className={weekIndex % 2 === 1 ? 'bg-muted/50' : ''}>
+                      <td className="border border-border p-2 font-semibold text-foreground">
                         Week {weekIndex + 1}
-                        {weekIndex % 2 === 1 && <span className="text-gray-500 text-xs block">(No cleaning)</span>}
+                        {weekIndex % 2 === 1 && <span className="text-muted-foreground text-xs block">(No cleaning)</span>}
                       </td>
                       {personNames.map((person, personIndex) => {
                         const task = cleaningTasks.find(
@@ -195,8 +196,8 @@ export default function CleaningCalendar() {
                         return (
                           <td 
                             key={personIndex} 
-                            className={`border border-gray-300 p-2 text-center ${
-                              task?.person === selectedPerson ? 'bg-blue-100' : ''
+                            className={`border border-border p-2 text-center text-foreground ${
+                              task?.person === selectedPerson ? 'bg-primary/10' : ''
                             }`}
                           >
                             {task ? task.place : '-'}
@@ -212,8 +213,8 @@ export default function CleaningCalendar() {
 
           {/* Calendar */}
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold">Calendar View</h3>
-            <div className="border rounded-lg p-4">
+            <h3 className="text-lg font-semibold text-foreground">Calendar View</h3>
+            <div className="border border-border rounded-lg p-4 bg-card">
               <Calendar
                 mode="single"
                 selected={currentWeek}
@@ -224,7 +225,7 @@ export default function CleaningCalendar() {
             {/* Show tasks for selected week */}
             {currentWeek && (
               <div className="mt-4">
-                <h4 className="font-semibold mb-2">
+                <h4 className="font-semibold mb-2 text-foreground">
                   Tasks for week of {format(startOfWeek(currentWeek, { weekStartsOn: 1 }), "MMMM dd")} - {format(addDays(startOfWeek(currentWeek, { weekStartsOn: 1 }), 6), "MMMM dd, yyyy")}:
                 </h4>
                 {isCleaningWeek(currentWeek) ? (
@@ -234,19 +235,19 @@ export default function CleaningCalendar() {
                         key={index} 
                         className={`p-2 rounded ${
                           task.person === selectedPerson 
-                            ? 'bg-blue-100 border border-blue-300' 
-                            : 'bg-gray-100 border border-gray-300'
+                            ? 'bg-primary/10 border border-primary/20' 
+                            : 'bg-muted border border-border'
                         }`}
                       >
-                        <strong>{task.person}</strong>: {task.place} 
-                        <span className="text-sm text-gray-600 ml-2">
+                        <strong className="text-foreground">{task.person}</strong>: <span className="text-foreground">{task.place}</span> 
+                        <span className="text-sm text-muted-foreground ml-2">
                           ({format(task.date, "EEEE")})
                         </span>
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <div className="p-4 bg-gray-100 border border-gray-300 rounded text-center text-gray-600">
+                  <div className="p-4 bg-muted border border-border rounded text-center text-muted-foreground">
                     No cleaning job for this week
                   </div>
                 )}
@@ -256,20 +257,21 @@ export default function CleaningCalendar() {
 
           {/* Legend */}
           <div className="space-y-2">
-            <h3 className="text-lg font-semibold">Legend</h3>
+            <h3 className="text-lg font-semibold text-foreground">Legend</h3>
             <div className="flex items-center space-x-4">
               <div className="flex items-center space-x-2">
-                <div className="w-4 h-4 bg-blue-100 border border-blue-300 rounded"></div>
-                <span className="text-sm">Your tasks</span>
+                <div className="w-4 h-4 bg-primary/10 border border-primary/20 rounded"></div>
+                <span className="text-sm text-foreground">Your tasks</span>
               </div>
               <div className="flex items-center space-x-2">
-                <div className="w-4 h-4 bg-gray-100 border border-gray-300 rounded"></div>
-                <span className="text-sm">Other people tasks</span>
+                <div className="w-4 h-4 bg-muted border border-border rounded"></div>
+                <span className="text-sm text-foreground">Other people tasks</span>
               </div>
             </div>
           </div>
         </CardContent>
       </Card>
+      </div>
     </div>
   );
 }

@@ -7,15 +7,9 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DollarSign, Plus, Edit, Trash2, Calendar } from "lucide-react";
 import { useSettings } from "@/contexts/SettingsContext";
+import { getExpenses, addExpense, updateExpense, deleteExpense, Expense as FirebaseExpense } from "@/lib/firebaseService";
 
-interface Expense {
-  id: string;
-  description: string;
-  amount: number;
-  billingCycle: "monthly" | "bimonthly";
-  date: string;
-  category: string;
-}
+// Remove the local Expense interface since we're using FirebaseExpense
 
 const expenseCategories = [
   { value: "rentalFee", label: "expenses.rentalFee" },
@@ -28,9 +22,10 @@ const expenseCategories = [
 
 export default function ExpensesPage() {
   const { t } = useSettings();
-  const [expenses, setExpenses] = useState<Expense[]>([]);
+  const [expenses, setExpenses] = useState<FirebaseExpense[]>([]);
   const [isAddingExpense, setIsAddingExpense] = useState(false);
-  const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
+  const [editingExpense, setEditingExpense] = useState<FirebaseExpense | null>(null);
+  const [loading, setLoading] = useState(true);
   const [formData, setFormData] = useState({
     description: "",
     amount: "",
@@ -39,18 +34,27 @@ export default function ExpensesPage() {
     category: "other",
   });
 
-  // Load expenses from localStorage on component mount
+  // Load expenses from Firebase on component mount
   useEffect(() => {
-    const savedExpenses = localStorage.getItem("homeManagerExpenses");
-    if (savedExpenses) {
-      setExpenses(JSON.parse(savedExpenses));
-    }
+    const loadExpenses = async () => {
+      try {
+        setLoading(true);
+        const firebaseExpenses = await getExpenses();
+        setExpenses(firebaseExpenses);
+      } catch (error) {
+        console.error('Error loading expenses:', error);
+        // Fallback to localStorage if Firebase fails
+        const savedExpenses = localStorage.getItem("homeManagerExpenses");
+        if (savedExpenses) {
+          setExpenses(JSON.parse(savedExpenses));
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    loadExpenses();
   }, []);
-
-  // Save expenses to localStorage whenever expenses change
-  useEffect(() => {
-    localStorage.setItem("homeManagerExpenses", JSON.stringify(expenses));
-  }, [expenses]);
 
   const resetForm = () => {
     setFormData({
@@ -64,7 +68,7 @@ export default function ExpensesPage() {
     setEditingExpense(null);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!formData.description || !formData.amount || !formData.date) {
@@ -72,25 +76,31 @@ export default function ExpensesPage() {
       return;
     }
 
-    const newExpense: Expense = {
-      id: editingExpense?.id || Date.now().toString(),
-      description: formData.description,
-      amount: parseFloat(formData.amount),
-      billingCycle: formData.billingCycle,
-      date: formData.date,
-      category: formData.category,
-    };
+    try {
+      const expenseData = {
+        description: formData.description,
+        amount: parseFloat(formData.amount),
+        billingCycle: formData.billingCycle,
+        date: formData.date,
+        category: formData.category,
+      };
 
-    if (editingExpense) {
-      setExpenses(expenses.map(exp => exp.id === editingExpense.id ? newExpense : exp));
-    } else {
-      setExpenses([...expenses, newExpense]);
+      if (editingExpense) {
+        await updateExpense(editingExpense.id!, expenseData);
+        setExpenses(expenses.map(exp => exp.id === editingExpense.id ? { ...exp, ...expenseData } : exp));
+      } else {
+        const newExpense = await addExpense(expenseData);
+        setExpenses([newExpense, ...expenses]);
+      }
+
+      resetForm();
+    } catch (error) {
+      console.error('Error saving expense:', error);
+      alert('Failed to save expense. Please try again.');
     }
-
-    resetForm();
   };
 
-  const handleEdit = (expense: Expense) => {
+  const handleEdit = (expense: FirebaseExpense) => {
     setEditingExpense(expense);
     setFormData({
       description: expense.description,
@@ -102,9 +112,15 @@ export default function ExpensesPage() {
     setIsAddingExpense(true);
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (confirm("Are you sure you want to delete this expense?")) {
-      setExpenses(expenses.filter(exp => exp.id !== id));
+      try {
+        await deleteExpense(id);
+        setExpenses(expenses.filter(exp => exp.id !== id));
+      } catch (error) {
+        console.error('Error deleting expense:', error);
+        alert('Failed to delete expense. Please try again.');
+      }
     }
   };
 
@@ -129,19 +145,19 @@ export default function ExpensesPage() {
   const totals = calculateTotals();
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-background">
       <div className="container mx-auto p-6">
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center space-x-3 mb-4">
-            <div className="p-3 bg-white dark:bg-gray-800 rounded-lg shadow-sm">
-              <DollarSign className="h-8 w-8 text-green-600 dark:text-green-400" />
+            <div className="p-3 bg-card rounded-lg shadow-sm">
+              <DollarSign className="h-8 w-8 text-primary" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+              <h1 className="text-3xl font-bold text-foreground">
                 {t("expenses.title")}
               </h1>
-              <p className="text-gray-600 dark:text-gray-400">
+              <p className="text-muted-foreground">
                 {t("expenses.description")}
               </p>
             </div>
@@ -150,18 +166,18 @@ export default function ExpensesPage() {
 
         {/* Summary Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <Card className="bg-white dark:bg-gray-800 shadow-sm">
+          <Card className="bg-card shadow-sm">
             <CardContent className="p-6">
               <div className="flex items-center space-x-3">
-                <div className="p-2 bg-blue-100 dark:bg-blue-900/20 rounded-lg">
-                  <Calendar className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+                <div className="p-2 bg-primary/10 rounded-lg">
+                  <Calendar className="h-6 w-6 text-primary" />
                 </div>
                 <div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">{t("expenses.monthlyTotal")}</p>
-                  <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                  <p className="text-sm text-muted-foreground">{t("expenses.monthlyTotal")}</p>
+                  <p className="text-2xl font-bold text-foreground">
                     ${totals.monthlyTotal.toFixed(2)}
                   </p>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                  <p className="text-sm text-muted-foreground">
                     ${totals.monthlyPerPerson.toFixed(2)} {t("expenses.perPerson")}
                   </p>
                 </div>
@@ -169,18 +185,18 @@ export default function ExpensesPage() {
             </CardContent>
           </Card>
 
-          <Card className="bg-white dark:bg-gray-800 shadow-sm">
+          <Card className="bg-card shadow-sm">
             <CardContent className="p-6">
               <div className="flex items-center space-x-3">
-                <div className="p-2 bg-orange-100 dark:bg-orange-900/20 rounded-lg">
-                  <Calendar className="h-6 w-6 text-orange-600 dark:text-orange-400" />
+                <div className="p-2 bg-secondary/20 rounded-lg">
+                  <Calendar className="h-6 w-6 text-secondary-foreground" />
                 </div>
                 <div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">{t("expenses.bimonthlyTotal")}</p>
-                  <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                  <p className="text-sm text-muted-foreground">{t("expenses.bimonthlyTotal")}</p>
+                  <p className="text-2xl font-bold text-foreground">
                     ${totals.bimonthlyTotal.toFixed(2)}
                   </p>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                  <p className="text-sm text-muted-foreground">
                     ${totals.bimonthlyPerPerson.toFixed(2)} {t("expenses.perPerson")}
                   </p>
                 </div>
@@ -188,18 +204,18 @@ export default function ExpensesPage() {
             </CardContent>
           </Card>
 
-          <Card className="bg-white dark:bg-gray-800 shadow-sm">
+          <Card className="bg-card shadow-sm">
             <CardContent className="p-6">
               <div className="flex items-center space-x-3">
-                <div className="p-2 bg-green-100 dark:bg-green-900/20 rounded-lg">
-                  <DollarSign className="h-6 w-6 text-green-600 dark:text-green-400" />
+                <div className="p-2 bg-accent/20 rounded-lg">
+                  <DollarSign className="h-6 w-6 text-accent-foreground" />
                 </div>
                 <div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">{t("expenses.grandTotal")}</p>
-                  <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                  <p className="text-sm text-muted-foreground">{t("expenses.grandTotal")}</p>
+                  <p className="text-2xl font-bold text-foreground">
                     ${totals.grandTotal.toFixed(2)}
                   </p>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                  <p className="text-sm text-muted-foreground">
                     ${totals.grandPerPerson.toFixed(2)} {t("expenses.perPerson")}
                   </p>
                 </div>
@@ -212,7 +228,7 @@ export default function ExpensesPage() {
         <div className="mb-6">
           <Button
             onClick={() => setIsAddingExpense(true)}
-            className="bg-green-600 hover:bg-green-700 text-white"
+            className="bg-primary hover:bg-primary/90 text-primary-foreground"
           >
             <Plus className="h-4 w-4 mr-2" />
             {t("expenses.addExpense")}
@@ -221,28 +237,27 @@ export default function ExpensesPage() {
 
         {/* Add/Edit Expense Form */}
         {isAddingExpense && (
-          <Card className="bg-white dark:bg-gray-800 shadow-sm mb-6">
+          <Card className="bg-card shadow-sm mb-6">
             <CardHeader>
-              <CardTitle className="text-gray-900 dark:text-white">
+              <CardTitle className="text-foreground">
                 {editingExpense ? t("expenses.edit") : t("expenses.addExpense")}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                       {t("expenses.descriptionLabel")}
-                     </label>
+                    <label className="block text-sm font-medium text-foreground mb-2">
+                      {t("expenses.descriptionLabel")}
+                    </label>
                     <Input
                       value={formData.description}
                       onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, description: e.target.value })}
                       placeholder="Enter expense description"
-                      className="dark:bg-gray-700 dark:border-gray-600"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    <label className="block text-sm font-medium text-foreground mb-2">
                       {t("expenses.amount")}
                     </label>
                     <Input
@@ -251,11 +266,10 @@ export default function ExpensesPage() {
                       value={formData.amount}
                       onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, amount: e.target.value })}
                       placeholder="0.00"
-                      className="dark:bg-gray-700 dark:border-gray-600"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    <label className="block text-sm font-medium text-foreground mb-2">
                       {t("expenses.billingCycle")}
                     </label>
                     <Select
@@ -264,7 +278,7 @@ export default function ExpensesPage() {
                         setFormData({ ...formData, billingCycle: value })
                       }
                     >
-                      <SelectTrigger className="dark:bg-gray-700 dark:border-gray-600">
+                      <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -274,25 +288,24 @@ export default function ExpensesPage() {
                     </Select>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    <label className="block text-sm font-medium text-foreground mb-2">
                       {t("expenses.date")}
                     </label>
                     <Input
                       type="date"
                       value={formData.date}
                       onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, date: e.target.value })}
-                      className="dark:bg-gray-700 dark:border-gray-600"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    <label className="block text-sm font-medium text-foreground mb-2">
                       Category
                     </label>
                     <Select
                       value={formData.category}
                       onValueChange={(value) => setFormData({ ...formData, category: value })}
                     >
-                      <SelectTrigger className="dark:bg-gray-700 dark:border-gray-600">
+                      <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -306,14 +319,13 @@ export default function ExpensesPage() {
                   </div>
                 </div>
                 <div className="flex space-x-2">
-                  <Button type="submit" className="bg-green-600 hover:bg-green-700">
+                  <Button type="submit" className="bg-primary hover:bg-primary/90 text-primary-foreground">
                     {t("expenses.save")}
                   </Button>
                   <Button
                     type="button"
                     variant="outline"
                     onClick={resetForm}
-                    className="dark:border-gray-600 dark:text-gray-300"
                   >
                     {t("expenses.cancel")}
                   </Button>
@@ -324,67 +336,72 @@ export default function ExpensesPage() {
         )}
 
         {/* Expenses List */}
-        <Card className="bg-white dark:bg-gray-800 shadow-sm">
+        <Card className="bg-card shadow-sm">
           <CardHeader>
-            <CardTitle className="text-gray-900 dark:text-white">
+            <CardTitle className="text-foreground">
               {t("expenses.title")}
             </CardTitle>
-            <CardDescription className="text-gray-600 dark:text-gray-400">
-              {expenses.length === 0 ? t("expenses.noExpenses") : `${expenses.length} expenses recorded`}
+            <CardDescription className="text-muted-foreground">
+              {loading ? "Loading..." : (expenses.length === 0 ? t("expenses.noExpenses") : `${expenses.length} expenses recorded`)}
             </CardDescription>
           </CardHeader>
           <CardContent>
-            {expenses.length === 0 ? (
+            {loading ? (
               <div className="text-center py-8">
-                <DollarSign className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-500 dark:text-gray-400 mb-2">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+                <p className="text-muted-foreground">Loading expenses...</p>
+              </div>
+            ) : expenses.length === 0 ? (
+              <div className="text-center py-8">
+                <DollarSign className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                <p className="text-muted-foreground mb-2">
                   {t("expenses.noExpenses")}
                 </p>
-                <p className="text-sm text-gray-400 dark:text-gray-500">
+                <p className="text-sm text-muted-foreground">
                   {t("expenses.addFirstExpense")}
                 </p>
               </div>
             ) : (
-              <div className="overflow-x-auto">
+                            <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead>
-                    <tr className="border-b dark:border-gray-700">
-                                             <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">
-                         {t("expenses.descriptionLabel")}
-                       </th>
-                      <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">
+                    <tr className="border-b border-border">
+                      <th className="text-left py-3 px-4 font-medium text-foreground">
+                        {t("expenses.descriptionLabel")}
+                      </th>
+                      <th className="text-left py-3 px-4 font-medium text-foreground">
                         {t("expenses.amount")}
                       </th>
-                      <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">
+                      <th className="text-left py-3 px-4 font-medium text-foreground">
                         {t("expenses.billingCycle")}
                       </th>
-                      <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">
+                      <th className="text-left py-3 px-4 font-medium text-foreground">
                         {t("expenses.date")}
                       </th>
-                      <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">
+                      <th className="text-left py-3 px-4 font-medium text-foreground">
                         {t("expenses.perPerson")}
                       </th>
-                      <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">
+                      <th className="text-left py-3 px-4 font-medium text-foreground">
                         {t("expenses.actions")}
                       </th>
                     </tr>
                   </thead>
                   <tbody>
                     {expenses.map((expense) => (
-                      <tr key={expense.id} className="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">
-                        <td className="py-3 px-4 text-gray-900 dark:text-white">
+                      <tr key={expense.id} className="border-b border-border hover:bg-muted/50">
+                        <td className="py-3 px-4 text-foreground">
                           {expense.description}
                         </td>
-                        <td className="py-3 px-4 text-gray-900 dark:text-white font-medium">
+                        <td className="py-3 px-4 text-foreground font-medium">
                           ${expense.amount.toFixed(2)}
                         </td>
-                        <td className="py-3 px-4 text-gray-600 dark:text-gray-400">
+                        <td className="py-3 px-4 text-muted-foreground">
                           {t(`expenses.${expense.billingCycle}`)}
                         </td>
-                        <td className="py-3 px-4 text-gray-600 dark:text-gray-400">
+                        <td className="py-3 px-4 text-muted-foreground">
                           {new Date(expense.date).toLocaleDateString()}
                         </td>
-                        <td className="py-3 px-4 text-gray-600 dark:text-gray-400">
+                        <td className="py-3 px-4 text-muted-foreground">
                           ${(expense.amount / 4).toFixed(2)}
                         </td>
                         <td className="py-3 px-4">
@@ -393,15 +410,14 @@ export default function ExpensesPage() {
                               size="sm"
                               variant="outline"
                               onClick={() => handleEdit(expense)}
-                              className="dark:border-gray-600 dark:text-gray-300"
                             >
                               <Edit className="h-4 w-4" />
                             </Button>
                             <Button
                               size="sm"
                               variant="outline"
-                              onClick={() => handleDelete(expense.id)}
-                              className="text-red-600 border-red-600 hover:bg-red-50 dark:text-red-400 dark:border-red-400 dark:hover:bg-red-900/20"
+                              onClick={() => expense.id && handleDelete(expense.id)}
+                              className="text-destructive border-destructive hover:bg-destructive/10"
                             >
                               <Trash2 className="h-4 w-4" />
                             </Button>

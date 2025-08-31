@@ -6,8 +6,9 @@ const nextConfig: NextConfig = {
   images: {
     unoptimized: true
   },
-  basePath: process.env.NODE_ENV === 'production' ? '/home-manager' : '',
-  assetPrefix: process.env.NODE_ENV === 'production' ? '/home-manager/' : '',
+  // Remove basePath and assetPrefix for Firebase hosting
+  // basePath: process.env.NODE_ENV === 'production' ? '/home-manager' : '',
+  // assetPrefix: process.env.NODE_ENV === 'production' ? '/home-manager/' : '',
 };
 
 export default nextConfig;

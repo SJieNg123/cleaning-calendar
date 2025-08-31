@@ -4,13 +4,13 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 
 interface SettingsData {
   language: "en" | "zh-TW";
-  theme: "light" | "dark" | "system";
+  theme: "light" | "graphite" | "system";
 }
 
 interface SettingsContextType {
   settings: SettingsData;
   updateLanguage: (language: "en" | "zh-TW") => void;
-  updateTheme: (theme: "light" | "dark" | "system") => void;
+  updateTheme: (theme: "light" | "graphite" | "system") => void;
   t: (key: string) => string;
 }
 
@@ -85,6 +85,14 @@ const translations = {
     "expenses.electricityBill": "Electricity Bill",
     "expenses.gasBill": "Gas Bill",
     "expenses.other": "Other",
+    
+    // Settings
+    "settings.title": "System Settings",
+    "settings.language": "Language",
+    "settings.theme": "Theme",
+    "settings.light": "Light",
+    "settings.graphite": "Graphite",
+    "settings.system": "System",
   },
   "zh-TW": {
     // Dashboard
@@ -154,6 +162,14 @@ const translations = {
     "expenses.electricityBill": "電費",
     "expenses.gasBill": "瓦斯費",
     "expenses.other": "其他",
+    
+    // Settings
+    "settings.title": "系統設定",
+    "settings.language": "語言",
+    "settings.theme": "主題",
+    "settings.light": "淺色",
+    "settings.graphite": "石墨",
+    "settings.system": "系統",
   }
 };
 
@@ -176,11 +192,15 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const root = document.documentElement;
     
-    if (settings.theme === "dark" || 
-        (settings.theme === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches)) {
-      root.classList.add("dark");
-    } else {
-      root.classList.remove("dark");
+    // Remove all theme classes first
+    root.classList.remove("dark", "graphite");
+    
+    if (settings.theme === "graphite") {
+      root.classList.add("graphite");
+    } else if (settings.theme === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches) {
+      root.classList.add("graphite");
+    } else if (settings.theme === "light") {
+      // Light theme - no additional classes needed
     }
   }, [settings.theme]);
 
@@ -190,7 +210,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     localStorage.setItem("homeManagerSettings", JSON.stringify(newSettings));
   };
 
-  const updateTheme = (theme: "light" | "dark" | "system") => {
+  const updateTheme = (theme: "light" | "graphite" | "system") => {
     const newSettings = { ...settings, theme };
     setSettings(newSettings);
     localStorage.setItem("homeManagerSettings", JSON.stringify(newSettings));

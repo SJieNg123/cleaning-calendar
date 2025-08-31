@@ -27,13 +27,13 @@ export default function Navigation() {
   ];
 
   return (
-    <nav className="bg-white dark:bg-gray-800 shadow-sm border-b dark:border-gray-700">
+    <nav className="bg-card shadow-sm border-b border-border">
       <div className="container mx-auto px-6">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-2">
-            <Home className="h-8 w-8 text-blue-600 dark:text-blue-400" />
-            <span className="text-xl font-bold text-gray-900 dark:text-white">{t("nav.homeManager")}</span>
+            <Home className="h-8 w-8 text-primary" />
+            <span className="text-xl font-bold text-foreground">{t("nav.homeManager")}</span>
           </Link>
 
           {/* Navigation Links */}
@@ -46,22 +46,22 @@ export default function Navigation() {
                 <Link
                   key={item.name}
                   href={isComingSoon ? "#" : item.href}
-                                     className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                     isActive
-                       ? "bg-blue-100 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300"
-                       : isComingSoon
-                       ? "text-gray-400 dark:text-gray-500 cursor-not-allowed"
-                       : "text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700"
-                   }`}
+                                                       className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                    isActive
+                      ? "bg-primary/10 text-primary"
+                      : isComingSoon
+                      ? "text-muted-foreground cursor-not-allowed"
+                      : "text-muted-foreground hover:text-foreground hover:bg-accent"
+                  }`}
                   onClick={isComingSoon ? (e) => e.preventDefault() : undefined}
                 >
                   {item.icon}
                   <span>{item.name}</span>
-                                     {isComingSoon && (
-                     <span className="text-xs bg-yellow-100 dark:bg-yellow-900/20 text-yellow-800 dark:text-yellow-200 px-1 py-0.5 rounded">
-                       Soon
-                     </span>
-                   )}
+                                                       {isComingSoon && (
+                    <span className="text-xs bg-secondary text-secondary-foreground px-1 py-0.5 rounded">
+                      Soon
+                    </span>
+                  )}
                 </Link>
               );
             })}
@@ -69,7 +69,7 @@ export default function Navigation() {
 
           {/* Mobile menu button */}
           <div className="md:hidden">
-            <button className="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white">
+            <button className="text-muted-foreground hover:text-foreground">
               <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
               </svg>
