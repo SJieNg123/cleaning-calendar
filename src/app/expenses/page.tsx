@@ -231,9 +231,9 @@ export default function ExpensesPage() {
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      {t("expenses.description")}
-                    </label>
+                                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                       {t("expenses.descriptionLabel")}
+                     </label>
                     <Input
                       value={formData.description}
                       onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, description: e.target.value })}
@@ -349,9 +349,9 @@ export default function ExpensesPage() {
                 <table className="w-full">
                   <thead>
                     <tr className="border-b dark:border-gray-700">
-                      <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">
-                        {t("expenses.description")}
-                      </th>
+                                             <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">
+                         {t("expenses.descriptionLabel")}
+                       </th>
                       <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">
                         {t("expenses.amount")}
                       </th>
