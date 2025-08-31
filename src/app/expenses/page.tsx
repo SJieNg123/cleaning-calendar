@@ -236,7 +236,7 @@ export default function ExpensesPage() {
                     </label>
                     <Input
                       value={formData.description}
-                      onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, description: e.target.value })}
                       placeholder="Enter expense description"
                       className="dark:bg-gray-700 dark:border-gray-600"
                     />
@@ -249,7 +249,7 @@ export default function ExpensesPage() {
                       type="number"
                       step="0.01"
                       value={formData.amount}
-                      onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, amount: e.target.value })}
                       placeholder="0.00"
                       className="dark:bg-gray-700 dark:border-gray-600"
                     />
@@ -280,7 +280,7 @@ export default function ExpensesPage() {
                     <Input
                       type="date"
                       value={formData.date}
-                      onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, date: e.target.value })}
                       className="dark:bg-gray-700 dark:border-gray-600"
                     />
                   </div>

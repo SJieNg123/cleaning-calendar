@@ -5,7 +5,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 // import { Button } from "@/components/ui/button";
-import { addWeeks, startOfWeek, format, isSameDay, addDays } from "date-fns";
+import { addWeeks, startOfWeek, format, addDays } from "date-fns";
 
 interface CleaningTask {
   person: string;
@@ -30,7 +30,7 @@ const PEOPLE_SCHEDULES = [
 
 export default function CleaningCalendar() {
   const [selectedPerson, setSelectedPerson] = useState<string>("");
-  const [personNames, setPersonNames] = useState<Person[]>([
+  const [personNames] = useState<Person[]>([
     { id: 1, name: "Shi Jie", schedule: PEOPLE_SCHEDULES[0] },
     { id: 2, name: "Hai Yan", schedule: PEOPLE_SCHEDULES[1] },
     { id: 3, name: "Ming Kang", schedule: PEOPLE_SCHEDULES[2] },
