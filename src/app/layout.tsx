@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import Navigation from "@/components/Navigation";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -13,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Cleaning Calendar",
-  description: "Cleaning Calendar",
+  title: "Home Management System",
+  description: "A comprehensive home management system with cleaning calendar and more services",
 };
 
 export default function RootLayout({
@@ -27,6 +28,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        <Navigation />
         {children}
       </body>
     </html>
