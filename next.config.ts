@@ -6,8 +6,8 @@ const nextConfig: NextConfig = {
   images: {
     unoptimized: true
   },
-  basePath: process.env.NODE_ENV === 'production' ? '/cleaning-calendar' : '',
-  assetPrefix: process.env.NODE_ENV === 'production' ? '/cleaning-calendar/' : '',
+  basePath: process.env.NODE_ENV === 'production' ? '/home-manager' : '',
+  assetPrefix: process.env.NODE_ENV === 'production' ? '/home-manager/' : '',
 };
 
 export default nextConfig;
